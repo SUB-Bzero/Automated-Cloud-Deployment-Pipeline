@@ -137,4 +137,6 @@ The bootstrap resources (S3 bucket + DynamoDB table) are removed by destroying `
 ## Documentation
 
 - `docs/architecture.png` — architecture diagram (traffic flow: Internet → ALB → EC2 → RDS, plus CI/CD and state management).
-- `docs/Capstone_Report.pdf` — final project report (implementation steps + evidence).
+- `docs/Capstone_Report.docx` / `docs/Capstone_Report.pdf` — final capstone report (implementation steps, evidence figures, runbook).
+- `docs/aws-iam-policy.json` — IAM policy for the deployment user.
+- `docs/evidence/` — raw terminal output behind every evidence figure in the report.

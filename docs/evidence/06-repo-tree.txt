@@ -1,0 +1,39 @@
+$ git ls-files   # repository structure (files grouped per directory)
+Automated-Cloud-Deployment-Pipeline/
+├── .gitignore, Makefile, README.md, docker-compose.yml
+├── .github/
+│   └── workflows/
+│       ├── bootstrap.yml, deploy.yml
+├── app/
+│   ├── .dockerignore, Dockerfile, eslint.config.js, package-lock.json, package.json, server.js
+│   ├── src/
+│   │   ├── app.js, config.js, db.js
+│   └── test/
+│       ├── health.test.js, helpers.js, items.test.js
+├── docs/
+│   ├── architecture.pdf, architecture.png, architecture.svg, aws-iam-policy.json
+│   └── evidence/
+│       ├── 02-eslint-lint.txt, 03-unit-tests.txt, 04-local-app-health.txt, 05-github-actions-run.txt
+├── scripts/
+│   ├── deploy.sh, hcl_align.py
+│   └── docs/
+│       ├── make_architecture.py, render_terminal.py
+└── terraform/
+    ├── bootstrap/
+    │   ├── main.tf, outputs.tf, variables.tf, versions.tf
+    ├── envs/
+    │   └── dev/
+    │       ├── backend.hcl.example, backend.tf, main.tf, outputs.tf, providers.tf, terraform.tfvars, variables.tf
+    └── modules/
+        ├── compute/
+        │   ├── main.tf, outputs.tf, variables.tf, versions.tf
+        │   └── templates/
+        │       ├── user_data.sh.tftpl
+        ├── database/
+        │   ├── main.tf, outputs.tf, variables.tf, versions.tf
+        ├── ecr/
+        │   ├── main.tf, outputs.tf, variables.tf, versions.tf
+        ├── monitoring/
+        │   ├── main.tf, outputs.tf, variables.tf, versions.tf
+        └── network/
+            ├── main.tf, outputs.tf, variables.tf, versions.tf
