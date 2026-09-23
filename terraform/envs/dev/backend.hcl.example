@@ -1,0 +1,6 @@
+# Copy this file to backend.hcl (git-ignored) and adjust, then run:
+#   terraform init -backend-config=backend.hcl
+bucket         = "123456789012-acdp-tfstate"
+region         = "us-east-1"
+dynamodb_table = "acdp-tf-locks"
+encrypt        = true

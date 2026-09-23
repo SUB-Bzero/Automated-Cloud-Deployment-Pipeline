@@ -1,0 +1,48 @@
+#!/bin/bash
+####################################################################
+# EC2 first-boot bootstrap (rendered by Terraform templatefile()).
+# Installs Docker + AWS CLI, prepares /etc/acdp/env for deploy.sh,
+# and validates that the instance role can read the DB parameter.
+# The actual container deployment is performed by scripts/deploy.sh,
+# invoked by the GitHub Actions "App Deploy" job over SSH.
+####################################################################
+set -euo pipefail
+exec > >(tee /var/log/acdp-user-data.log) 2>&1
+
+echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] Bootstrapping ${project}-${environment} app host..."
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y docker.io awscli curl
+
+systemctl enable --now docker
+usermod -aG docker ubuntu
+
+mkdir -p /opt/acdp /etc/acdp
+
+# Environment consumed by scripts/deploy.sh (image details + SSM parameter).
+cat > /etc/acdp/env <<EOF
+AWS_REGION=${aws_region}
+PROJECT=${project}
+ENVIRONMENT=${environment}
+APP_PORT=${app_port}
+ECR_REPOSITORY_URL=${ecr_repository_url}
+DB_PARAMETER_NAME=${db_parameter_name}
+EOF
+chmod 600 /etc/acdp/env
+chown root:root /etc/acdp/env
+
+# Validate the instance role can read the database URL from SSM.
+# (Non-fatal: RDS may still be creating when the instance first boots.)
+if DATABASE_URL="$(aws ssm get-parameter \
+      --name "${db_parameter_name}" \
+      --with-decryption \
+      --query 'Parameter.Value' \
+      --output text \
+      --region "${aws_region}" 2>/dev/null)"; then
+  echo "SSM parameter access OK (${db_parameter_name})"
+else
+  echo "WARN: SSM parameter not readable yet — deploy.sh will retry."
+fi
+
+echo "Bootstrap complete. Waiting for the CI/CD pipeline to deploy ${ecr_repository_url}:${image_tag}"
