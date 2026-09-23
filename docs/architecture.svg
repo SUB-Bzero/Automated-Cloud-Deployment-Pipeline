@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000">
+<rect width="1500" height="1000" fill="#F8FAFC"/>
+<text x="750.0" y="46" font-family="Helvetica" font-size="25" fill="#0F172A" text-anchor="middle" font-weight="bold">Automated Cloud Deployment Pipeline — System Architecture</text>
+<text x="750.0" y="74" font-family="Helvetica" font-size="15" fill="#475569" text-anchor="middle">Traffic flow:  Internet  →  Cloud Host (ALB → EC2 container)  →  Database (RDS PostgreSQL)</text>
+<rect x="60" y="120" width="170" height="78" rx="10" fill="#FFFFFF" stroke="#334155" stroke-width="2"/>
+<text x="145.0" y="155.25" font-family="Helvetica" font-size="15" fill="#0F172A" text-anchor="middle" font-weight="bold">Developer</text>
+<text x="145.0" y="173.75" font-family="Helvetica" font-size="12.5" fill="#374151" text-anchor="middle">git push</text>
+<rect x="300" y="110" width="230" height="92" rx="10" fill="#24292F" stroke="#24292F" stroke-width="2"/>
+<text x="415.0" y="143.0" font-family="Helvetica" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="bold">GitHub Repository</text>
+<text x="415.0" y="161.5" font-family="Helvetica" font-size="12.5" fill="#FFFFFF" text-anchor="middle">app + Terraform +</text>
+<text x="415.0" y="180.0" font-family="Helvetica" font-size="12.5" fill="#FFFFFF" text-anchor="middle">CI/CD workflow files</text>
+<rect x="600" y="100" width="560" height="200" rx="10" fill="#F0F6FC" stroke="#0969DA" stroke-width="2"/>
+<text x="880.0" y="205.5" font-family="Helvetica" font-size="15" fill="#0F172A" text-anchor="middle" font-weight="bold"></text>
+<text x="880" y="128" font-family="Helvetica" font-size="15" fill="#0A306C" text-anchor="middle" font-weight="bold">GitHub Actions — CI/CD pipeline (.github/workflows/deploy.yml)</text>
+<rect x="620" y="148" width="172" height="62" rx="7" fill="#FFFFFF" stroke="#54AEFF" stroke-width="1.5"/>
+<text x="706" y="173" font-family="Helvetica" font-size="13" fill="#0F172A" text-anchor="middle" font-weight="bold">1. Lint & Tests</text>
+<text x="706" y="192" font-family="Helvetica" font-size="11.5" fill="#57606A" text-anchor="middle">ESLint + node:test</text>
+<rect x="800" y="148" width="172" height="62" rx="7" fill="#FFFFFF" stroke="#54AEFF" stroke-width="1.5"/>
+<text x="886" y="173" font-family="Helvetica" font-size="13" fill="#0F172A" text-anchor="middle" font-weight="bold">2. Terraform validate</text>
+<text x="886" y="192" font-family="Helvetica" font-size="11.5" fill="#57606A" text-anchor="middle">fmt + validate modules</text>
+<rect x="980" y="148" width="172" height="62" rx="7" fill="#FFFFFF" stroke="#54AEFF" stroke-width="1.5"/>
+<text x="1066" y="173" font-family="Helvetica" font-size="13" fill="#0F172A" text-anchor="middle" font-weight="bold">3. Docker build</text>
+<text x="1066" y="192" font-family="Helvetica" font-size="11.5" fill="#57606A" text-anchor="middle">compose integration test</text>
+<rect x="620" y="222" width="172" height="62" rx="7" fill="#FFFFFF" stroke="#54AEFF" stroke-width="1.5"/>
+<text x="706" y="247" font-family="Helvetica" font-size="13" fill="#0F172A" text-anchor="middle" font-weight="bold">4. terraform apply</text>
+<text x="706" y="266" font-family="Helvetica" font-size="11.5" fill="#57606A" text-anchor="middle">provision AWS infra</text>
+<rect x="800" y="222" width="172" height="62" rx="7" fill="#FFFFFF" stroke="#54AEFF" stroke-width="1.5"/>
+<text x="886" y="247" font-family="Helvetica" font-size="13" fill="#0F172A" text-anchor="middle" font-weight="bold">5. Push to ECR</text>
+<text x="886" y="266" font-family="Helvetica" font-size="11.5" fill="#57606A" text-anchor="middle">tag = commit SHA</text>
+<rect x="980" y="222" width="172" height="62" rx="7" fill="#FFFFFF" stroke="#54AEFF" stroke-width="1.5"/>
+<text x="1066" y="247" font-family="Helvetica" font-size="13" fill="#0F172A" text-anchor="middle" font-weight="bold">6. App deploy</text>
+<text x="1066" y="266" font-family="Helvetica" font-size="11.5" fill="#57606A" text-anchor="middle">SSH + health check</text>
+<line x1="230" y1="159" x2="300" y2="159" stroke="#475569" stroke-width="2"/>
+<polygon points="300,159 289.0,155.0 289.0,163.0" fill="#475569"/>
+<text x="265" y="148" font-family="Helvetica" font-size="12.5" fill="#0F172A" text-anchor="middle" font-weight="bold">git push</text>
+<line x1="530" y1="156" x2="600" y2="156" stroke="#475569" stroke-width="2"/>
+<polygon points="600,156 589.0,152.0 589.0,160.0" fill="#475569"/>
+<text x="565" y="145" font-family="Helvetica" font-size="12.5" fill="#0F172A" text-anchor="middle" font-weight="bold">trigger</text>
+<rect x="250" y="340" width="1230" height="620" rx="16" fill="#FFF7ED" stroke="#FF9900" stroke-width="2.5" stroke-dasharray="10 6"/>
+<text x="270" y="372" font-family="Helvetica" font-size="15" fill="#9A3412" text-anchor="start" font-weight="bold">AWS Cloud (us-east-1) — provisioned by Terraform</text>
+<rect x="380" y="392" width="210" height="84" rx="10" fill="#FDE68A" stroke="#B45309" stroke-width="2"/>
+<text x="485.0" y="421.0" font-family="Helvetica" font-size="15" fill="#0F172A" text-anchor="middle" font-weight="bold">Amazon ECR</text>
+<text x="485.0" y="439.5" font-family="Helvetica" font-size="12.5" fill="#374151" text-anchor="middle">acdp-dev-app</text>
+<text x="485.0" y="458.0" font-family="Helvetica" font-size="12.5" fill="#374151" text-anchor="middle">images: SHA + latest</text>
+<rect x="300" y="510" width="270" height="150" rx="10" fill="#ECFDF5" stroke="#059669" stroke-width="2" stroke-dasharray="6 4"/>
+<rect x="320" y="530" width="230" height="56" rx="10" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+<text x="435.0" y="554.0" font-family="Helvetica" font-size="13.5" fill="#0F172A" text-anchor="middle" font-weight="bold">S3 bucket — tfstate</text>
+<text x="435.0" y="571.5" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">versioned + encrypted</text>
+<rect x="320" y="596" width="230" height="50" rx="10" fill="#FED7AA" stroke="#EA580C" stroke-width="2"/>
+<text x="435.0" y="617.0" font-family="Helvetica" font-size="13.5" fill="#0F172A" text-anchor="middle" font-weight="bold">DynamoDB — lock</text>
+<text x="435.0" y="634.5" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">state locking</text>
+<rect x="700" y="395" width="750" height="545" rx="12" fill="#FFFBEB" stroke="#D97706" stroke-width="2"/>
+<text x="715" y="422" font-family="Helvetica" font-size="14" fill="#92400E" text-anchor="start" font-weight="bold">VPC 10.0.0.0/16</text>
+<rect x="720" y="435" width="710" height="205" rx="10" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+<text x="735" y="458" font-family="Helvetica" font-size="12.5" fill="#1E40AF" text-anchor="start">Public subnets — AZ a & b  (10.0.1.0/24, 10.0.2.0/24) · IGW + route to Internet</text>
+<rect x="740" y="480" width="260" height="110" rx="10" fill="#FDE68A" stroke="#B45309" stroke-width="2"/>
+<text x="870.0" y="513.0" font-family="Helvetica" font-size="14" fill="#0F172A" text-anchor="middle" font-weight="bold">Application Load Balancer</text>
+<text x="870.0" y="531.0" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">Internet-facing :80</text>
+<text x="870.0" y="549.0" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">health check: GET /health</text>
+<text x="870.0" y="567.0" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">forward to target :8080</text>
+<rect x="1080" y="470" width="320" height="145" rx="10" fill="#FED7AA" stroke="#EA580C" stroke-width="2"/>
+<text x="1240" y="494" font-family="Helvetica" font-size="13.5" fill="#0F172A" text-anchor="middle" font-weight="bold">EC2 t3.micro (Ubuntu) — cloud host</text>
+<text x="1240" y="513" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">IAM role: ECR pull + SSM read</text>
+<text x="1240" y="530" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">user_data installs Docker</text>
+<rect x="1100" y="545" width="280" height="56" rx="7" fill="#FFFFFF" stroke="#C2410C" stroke-width="2"/>
+<text x="1240" y="566" font-family="Helvetica" font-size="12.5" fill="#0F172A" text-anchor="middle" font-weight="bold">Docker container: acdp-app</text>
+<text x="1240" y="585" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">Node.js/Express on :8080</text>
+<rect x="720" y="675" width="710" height="195" rx="10" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/>
+<text x="735" y="698" font-family="Helvetica" font-size="12.5" fill="#166534" text-anchor="start">Private subnets — AZ a & b  (10.0.11.0/24, 10.0.12.0/24) · no Internet route</text>
+<rect x="1080" y="720" width="320" height="115" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+<text x="1240.0" y="755.5" font-family="Helvetica" font-size="14" fill="#0F172A" text-anchor="middle" font-weight="bold">Amazon RDS PostgreSQL</text>
+<text x="1240.0" y="773.5" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">db.t3.micro · encrypted</text>
+<text x="1240.0" y="791.5" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">username/password generated</text>
+<text x="1240.0" y="809.5" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">URL in SSM SecureString</text>
+<text x="950" y="790" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">Security group: PostgreSQL :5432</text>
+<rect x="55" y="515" width="165" height="95" rx="10" fill="#FFFFFF" stroke="#334155" stroke-width="2"/>
+<text x="137.5" y="549.5" font-family="Helvetica" font-size="15" fill="#0F172A" text-anchor="middle" font-weight="bold">Internet</text>
+<text x="137.5" y="568.0" font-family="Helvetica" font-size="12.5" fill="#374151" text-anchor="middle">users / browsers</text>
+<text x="137.5" y="586.5" font-family="Helvetica" font-size="12.5" fill="#374151" text-anchor="middle">HTTP requests</text>
+<rect x="310" y="690" width="260" height="130" rx="10" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2"/>
+<text x="440.0" y="725.0" font-family="Helvetica" font-size="14" fill="#0F172A" text-anchor="middle" font-weight="bold">Amazon CloudWatch</text>
+<text x="440.0" y="742.5" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">alarms: EC2 CPU ‾80%</text>
+<text x="440.0" y="760.0" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">ALB HTTP 5xx spike,</text>
+<text x="440.0" y="777.5" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">unhealthy hosts, RDS CPU</text>
+<text x="440.0" y="795.0" font-family="Helvetica" font-size="11.5" fill="#374151" text-anchor="middle">+ dashboard</text>
+<rect x="310" y="850" width="260" height="85" rx="10" fill="#FCE7F3" stroke="#DB2777" stroke-width="2"/>
+<text x="440.0" y="879.5" font-family="Helvetica" font-size="14" fill="#0F172A" text-anchor="middle" font-weight="bold">Amazon SNS</text>
+<text x="440.0" y="897.5" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">email alert</text>
+<text x="440.0" y="915.5" font-family="Helvetica" font-size="12" fill="#374151" text-anchor="middle">(subscription confirmed)</text>
+<line x1="760" y1="300" x2="760" y2="338" stroke="#B45309" stroke-width="2"/>
+<polygon points="760,338 764.0,327.0 756.0,327.0" fill="#B45309"/>
+<text x="770" y="322" font-family="Helvetica" font-size="12.5" fill="#9A3412" text-anchor="start" font-weight="bold">terraform apply — VPC · EC2 · ALB · RDS · ECR · alarms</text>
+<circle cx="745" cy="320" r="13" fill="#B45309"/>
+<text x="745" y="324.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">3</text>
+<line x1="490" y1="300" x2="490" y2="390" stroke="#B45309" stroke-width="2"/>
+<polygon points="490,390 494.0,379.0 486.0,379.0" fill="#B45309"/>
+<text x="500" y="350" font-family="Helvetica" font-size="12.5" fill="#9A3412" text-anchor="start" font-weight="bold">docker push (build & push stage)</text>
+<circle cx="475" cy="348" r="13" fill="#B45309"/>
+<text x="475" y="352.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">4</text>
+<line x1="655" y1="300" x2="655" y2="555" stroke="#059669" stroke-width="2"/>
+<polygon points="655,555 659.0,544.0 651.0,544.0" fill="#059669"/>
+<line x1="655" y1="555" x2="572" y2="555" stroke="#059669" stroke-width="2"/>
+<polygon points="572,555 583.0,559.0 583.0,551.0" fill="#059669"/>
+<text x="665" y="480" font-family="Helvetica" font-size="12.5" fill="#065F46" text-anchor="start" font-weight="bold">Terraform remote state</text>
+<circle cx="640" cy="470" r="13" fill="#059669"/>
+<text x="640" y="474.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">5</text>
+<line x1="1120" y1="300" x2="1120" y2="468" stroke="#B45309" stroke-width="2" stroke-dasharray="7 5"/>
+<polygon points="1120,468 1124.0,457.0 1116.0,457.0" fill="#B45309"/>
+<text x="1130" y="400" font-family="Helvetica" font-size="12.5" fill="#9A3412" text-anchor="start" font-weight="bold">SSH deploy: scripts/deploy.sh</text>
+<circle cx="1105" cy="395" r="13" fill="#B45309"/>
+<text x="1105" y="399.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">6</text>
+<line x1="590" y1="434" x2="1078" y2="520" stroke="#B45309" stroke-width="2"/>
+<polygon points="1078,520 1067.861154503899,514.1515974825436 1066.4727138786366,522.0301907979851" fill="#B45309"/>
+<text x="770" y="462" font-family="Helvetica" font-size="12.5" fill="#9A3412" text-anchor="middle" font-weight="bold">docker pull (instance IAM role)</text>
+<line x1="220" y1="562" x2="738" y2="562" stroke="#1D4ED8" stroke-width="2"/>
+<polygon points="738,562 727.0,558.0 727.0,566.0" fill="#1D4ED8"/>
+<text x="478" y="548" font-family="Helvetica" font-size="13" fill="#1E3A8A" text-anchor="middle" font-weight="bold">HTTP :80</text>
+<circle cx="463" cy="562" r="13" fill="#1D4ED8"/>
+<text x="463" y="566.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">1</text>
+<line x1="1000" y1="562" x2="1078" y2="562" stroke="#1D4ED8" stroke-width="2"/>
+<polygon points="1078,562 1067.0,558.0 1067.0,566.0" fill="#1D4ED8"/>
+<text x="1039" y="548" font-family="Helvetica" font-size="12.5" fill="#1E3A8A" text-anchor="middle" font-weight="bold">:8080</text>
+<circle cx="1010" cy="562" r="13" fill="#1D4ED8"/>
+<text x="1010" y="566.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">2</text>
+<line x1="1240" y1="615" x2="1240" y2="718" stroke="#1D4ED8" stroke-width="2"/>
+<polygon points="1240,718 1244.0,707.0 1236.0,707.0" fill="#1D4ED8"/>
+<text x="1250" y="670" font-family="Helvetica" font-size="12.5" fill="#1E3A8A" text-anchor="start" font-weight="bold">PostgreSQL :5432</text>
+<circle cx="1225" cy="668" r="13" fill="#1D4ED8"/>
+<text x="1225" y="672.5" font-family="Helvetica" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">3</text>
+<line x1="718" y1="760" x2="572" y2="760" stroke="#7C3AED" stroke-width="2" stroke-dasharray="6 4"/>
+<polygon points="572,760 583.0,764.0 583.0,756.0" fill="#7C3AED"/>
+<text x="645" y="746" font-family="Helvetica" font-size="12" fill="#5B21B6" text-anchor="middle" font-weight="bold">metrics</text>
+<line x1="440" y1="820" x2="440" y2="848" stroke="#DB2777" stroke-width="2"/>
+<polygon points="440,848 444.0,837.0 436.0,837.0" fill="#DB2777"/>
+<text x="450" y="840" font-family="Helvetica" font-size="12" fill="#9D174D" text-anchor="start" font-weight="bold">alarm state</text>
+<line x1="570" y1="893" x2="640" y2="893" stroke="#DB2777" stroke-width="2"/>
+<polygon points="640,893 629.0,889.0 629.0,897.0" fill="#DB2777"/>
+<text x="648" y="897" font-family="Helvetica" font-size="12.5" fill="#9D174D" text-anchor="start" font-weight="bold">✉ email notification</text>
+<rect x="700" y="895" width="470" height="46" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1"/>
+<text x="715" y="915" font-family="Helvetica" font-size="12" fill="#0F172A" text-anchor="start" font-weight="bold">Legend:</text>
+<text x="715" y="934" font-family="Helvetica" font-size="11" fill="#475569" text-anchor="start">blue = application traffic · orange = CI/CD · green = state · purple dashed = monitoring · ①-③ numbered request flow</text>
+</svg>

@@ -43,12 +43,26 @@ async function setupTestApp() {
         .rows[0],
   };
 
-  await pool.query(`CREATE TABLE IF NOT EXISTS items (
-    id         SERIAL PRIMARY KEY,
-    title      TEXT        NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-  )`);
-  await pool.query('TRUNCATE items RESTART IDENTITY');
+  // Serialize schema setup across test processes with a transaction-level
+  // advisory lock: concurrent CREATE TABLE on one database raises
+  // "duplicate key value violates unique constraint pg_type_typname_nsp_index".
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(918273645)');
+    await client.query(`CREATE TABLE IF NOT EXISTS items (
+      id         SERIAL PRIMARY KEY,
+      title      TEXT        NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
+    await client.query('TRUNCATE items RESTART IDENTITY');
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 
   const app = createApp(db);
   return { app, db, pool };
