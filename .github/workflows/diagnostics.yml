@@ -1,6 +1,8 @@
 name: Temp diagnostics (will be removed)
 
 on:
+  push:
+    branches: ["**"]
   workflow_dispatch:
 
 permissions:
