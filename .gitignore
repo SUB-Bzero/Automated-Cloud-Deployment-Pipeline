@@ -1,0 +1,26 @@
+# --- Application ---
+node_modules/
+npm-debug.log*
+.env
+.env.*
+coverage/
+
+# --- Terraform ---
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+secret*.tfvars
+backend.hcl
+
+# --- Python tooling (report/diagram generation) ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- Editors / OS ---
+.DS_Store
+.idea/
+.vscode/

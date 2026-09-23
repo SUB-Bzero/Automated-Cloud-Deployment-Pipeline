@@ -1,0 +1,54 @@
+####################################################################
+# One-time setup: create the Terraform remote state backend
+# (S3 bucket with versioning/encryption + DynamoDB lock table).
+#
+# Run this ONCE from the Actions tab ("Bootstrap Terraform backend"
+# -> Run workflow) after adding the AWS secrets, and before the first
+# real deployment. The deploy workflow's `terraform init` depends on
+# these resources existing.
+####################################################################
+
+name: Bootstrap Terraform backend
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    name: Create S3 state bucket + DynamoDB lock table
+    runs-on: ubuntu-24.04
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.9.8"
+          terraform_wrapper: false
+
+      - name: Apply the bootstrap module
+        working-directory: terraform/bootstrap
+        run: |
+          terraform init
+          terraform apply -auto-approve -input=false
+
+      - name: Summary
+        working-directory: terraform/bootstrap
+        run: |
+          {
+            echo "## Terraform backend ready"
+            echo '```'
+            terraform output init_command
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,28 @@
+$ npm run lint
+
+> acdp-webapp@1.0.0 lint
+> eslint .
+
+$ TEST_DATABASE_URL='postgres://app:app@localhost:5432/appdb' npm test
+
+> acdp-webapp@1.0.0 test
+> node --test --test-concurrency=1
+
+TAP version 13
+ok 1 - GET /health returns 200 with status "ok" when the database is up
+ok 2 - GET /health returns 503 with status "unhealthy" when the database is down
+ok 3 - GET / renders the home page with version and database status
+ok 2 - test/helpers.js
+ok 5 - POST /api/items creates an item and GET /api/items lists it
+ok 6 - POST /api/items rejects an empty or missing title with 400
+ok 7 - DELETE /api/items/:id removes the item and then returns 404
+ok 8 - GET /api/unknown returns 404 JSON
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 579.425938

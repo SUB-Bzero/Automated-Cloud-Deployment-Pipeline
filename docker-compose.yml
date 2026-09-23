@@ -1,0 +1,39 @@
+# Local test environment: Web App + PostgreSQL database.
+# Usage:
+#   docker compose up --build --wait     # start and wait for health checks
+#   curl http://localhost:8080/health    # verify
+#   docker compose down -v               # stop and remove the volume
+name: acdp
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ./app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://app:app@db:5432/appdb
+      APP_VERSION: ${APP_VERSION:-compose-local}
+      NODE_ENV: production
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

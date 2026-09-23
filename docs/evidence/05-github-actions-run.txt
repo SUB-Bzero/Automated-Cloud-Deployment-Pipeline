@@ -1,0 +1,55 @@
+$ gh run view 35932827444 --repo SUB-Bzero/Automated-Cloud-Deployment-Pipeline
+
+✓ arena/01a0d06d-automated-cloud-deployment-pip CI/CD Deploy · 35932827444
+Triggered via push about 2 minutes ago
+
+JOBS
+✓ Preflight (detect configuration) in 2s (ID 107423111245)
+✓ Terraform fmt & validate in 48s (ID 107423132078)
+✓ Lint & Tests in 22s (ID 107423132184)
+✓ Docker build & compose integration test in 30s (ID 107423255706)
+- Infrastructure Deploy (terraform apply) (ID 107423367551)
+- Build & Push to ECR in 0s (ID 107423403871)
+- App Deploy (EC2 via SSH) in 0s (ID 107423404051)
+
+For more information about a job, try: gh run view --job=<job-id>
+
+$ gh api .../actions/runs/35932827444/jobs   (step detail)
+JOB  Preflight (detect configuration)  [success]
+  [OK]      Set up job
+  [OK]      Check for configured secrets
+  [OK]      Write pipeline summary
+  [OK]      Complete job
+JOB  Terraform fmt & validate  [success]
+  [OK]      Set up job
+  [OK]      Run actions/checkout@v7
+  [OK]      Run hashicorp/setup-terraform@v4
+  [OK]      Check formatting (terraform fmt -check)
+  [OK]      Init (offline backend) and validate every module
+  [OK]      Post Run actions/checkout@v7
+  [OK]      Complete job
+JOB  Lint & Tests  [success]
+  [OK]      Set up job
+  [OK]      Initialize containers
+  [OK]      Run actions/checkout@v7
+  [OK]      Run actions/setup-node@v7
+  [OK]      Install dependencies
+  [OK]      Lint (ESLint)
+  [OK]      Unit & integration tests (node:test + real PostgreSQL)
+  [OK]      Post Run actions/setup-node@v7
+  [OK]      Post Run actions/checkout@v7
+  [OK]      Stop containers
+  [OK]      Complete job
+JOB  Docker build & compose integration test  [success]
+  [OK]      Set up job
+  [OK]      Run actions/checkout@v7
+  [OK]      Build the multi-stage image
+  [OK]      Start Web App + PostgreSQL locally (docker compose)
+  [OK]      Smoke test /health
+  [OK]      Show container status
+  [SKIPPED] Dump app logs (on failure)
+  [OK]      Post Run actions/checkout@v7
+  [OK]      Complete job
+JOB  Infrastructure Deploy (terraform apply)  [skipped]
+JOB  Build & Push to ECR  [skipped]
+JOB  App Deploy (EC2 via SSH)  [skipped]

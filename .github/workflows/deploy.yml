@@ -1,0 +1,369 @@
+####################################################################
+# Automated Cloud Deployment Pipeline — CI/CD workflow
+#
+# Trigger: every git push (any branch) + manual dispatch.
+#
+# Stages:
+#   1. lint-test        ESLint + unit/integration tests (PostgreSQL service container)
+#   2. terraform-validate  terraform fmt -check + validate on all modules
+#   3. docker-build     multi-stage image build + docker-compose integration test
+#   4. terraform-infra  terraform apply (VPC, EC2, ALB, RDS, ECR, alarms)  [needs AWS secrets]
+#   5. push-ecr         docker build & push to AWS ECR                    [needs AWS secrets]
+#   6. deploy-app       SSH deploy to EC2 + ALB health check + auto-rollback [needs AWS + SSH secrets]
+#
+# The AWS stages run automatically once the repository secrets
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (+ EC2_SSH_PRIVATE_KEY) exist.
+# Until then they are skipped and the pipeline stays green, so the
+# lint/test/build stages can be validated before an AWS account is attached.
+####################################################################
+
+name: CI/CD Deploy
+
+on:
+  push:
+    # "triggers on git push" — every branch, matching the project brief
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (git SHA, 'latest', or 'previous' to roll back)"
+        required: false
+        default: "latest"
+
+# Only one deployment per branch at a time; never cancel an in-flight apply.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  TF_VERSION: "1.9.8"
+
+jobs:
+  ##################################################################
+  # Stage 0 — preflight: detect which deployment secrets exist
+  ##################################################################
+  preflight:
+    name: Preflight (detect configuration)
+    runs-on: ubuntu-24.04
+    outputs:
+      aws_configured: ${{ steps.check.outputs.aws_configured }}
+      ssh_configured: ${{ steps.check.outputs.ssh_configured }}
+    steps:
+      - name: Check for configured secrets
+        id: check
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "aws_configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "aws_configured=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$EC2_SSH_PRIVATE_KEY" ]; then
+            echo "ssh_configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ssh_configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write pipeline summary
+        run: |
+          {
+            echo "## Pipeline configuration"
+            echo ""
+            echo "| Stage | Status |"
+            echo "|---|---|"
+            echo "| Lint & tests | always runs |"
+            echo "| Terraform validate | always runs |"
+            echo "| Docker build + compose test | always runs |"
+            if [ "${{ steps.check.outputs.aws_configured }}" = "true" ]; then
+              echo "| Terraform apply | **runs** (AWS secrets detected) |"
+              echo "| Push to ECR | **runs** |"
+            else
+              echo "| Terraform apply | skipped — add AWS secrets to enable |"
+              echo "| Push to ECR | skipped — add AWS secrets to enable |"
+            fi
+            if [ "${{ steps.check.outputs.ssh_configured }}" = "true" ]; then
+              echo "| App deploy on EC2 | **runs** (SSH key detected) |"
+            else
+              echo "| App deploy on EC2 | skipped — add EC2_SSH_PRIVATE_KEY to enable |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  ##################################################################
+  # Stage 1 — linting & unit tests
+  ##################################################################
+  lint-test:
+    name: Lint & Tests
+    runs-on: ubuntu-24.04
+    needs: preflight
+    defaults:
+      run:
+        working-directory: app
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: appdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d appdb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Unit & integration tests (node:test + real PostgreSQL)
+        env:
+          TEST_DATABASE_URL: postgres://app:app@localhost:5432/appdb
+        run: npm test
+
+  ##################################################################
+  # Stage 2 — Terraform static validation (no AWS account needed)
+  ##################################################################
+  terraform-validate:
+    name: Terraform fmt & validate
+    runs-on: ubuntu-24.04
+    needs: preflight
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Check formatting (terraform fmt -check)
+        run: terraform fmt -check -recursive -diff terraform
+
+      - name: Init (offline backend) and validate every module
+        run: |
+          status=0
+          for dir in terraform/bootstrap terraform/modules/*/ terraform/envs/dev; do
+            echo "::group::terraform validate: ${dir}"
+            ( cd "$dir" && terraform init -backend=false -input=false >/dev/null && terraform validate ) || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+  ##################################################################
+  # Stage 3 — build the image and test it with docker compose
+  ##################################################################
+  docker-build:
+    name: Docker build & compose integration test
+    runs-on: ubuntu-24.04
+    needs: lint-test
+    env:
+      APP_VERSION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the multi-stage image
+        run: docker compose build
+
+      - name: Start Web App + PostgreSQL locally (docker compose)
+        run: docker compose up -d --wait --wait-timeout 180
+
+      - name: Smoke test /health
+        run: |
+          curl --fail --silent --show-error \
+               --retry 10 --retry-delay 3 --retry-connrefused \
+               http://localhost:8080/health | tee health.json
+          grep -q '"status":"ok"' health.json
+
+      - name: Show container status
+        run: docker compose ps
+
+      - name: Dump app logs (on failure)
+        if: failure()
+        run: docker compose logs app || true
+
+  ##################################################################
+  # Stage 4 — infrastructure deploy (terraform apply)
+  ##################################################################
+  terraform-infra:
+    name: Infrastructure Deploy (terraform apply)
+    runs-on: ubuntu-24.04
+    needs: [preflight, lint-test, terraform-validate]
+    if: needs.preflight.outputs.aws_configured == 'true'
+    outputs:
+      alb_dns: ${{ steps.tf.outputs.alb_dns }}
+      ec2_ip: ${{ steps.tf.outputs.ec2_ip }}
+      ecr_url: ${{ steps.tf.outputs.ecr_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform init (S3 backend)
+        env:
+          AWS_ACCOUNT_ID: ${{ steps.creds.outputs.aws-account-id }}
+        working-directory: terraform/envs/dev
+        run: |
+          bucket="${TF_STATE_BUCKET:-${AWS_ACCOUNT_ID}-acdp-tfstate}"
+          terraform init -input=false \
+            -backend-config="bucket=${bucket}" \
+            -backend-config="region=${AWS_REGION}" \
+            -backend-config="dynamodb_table=acdp-tf-locks" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform validate
+        working-directory: terraform/envs/dev
+        run: terraform validate
+
+      - name: Terraform apply
+        working-directory: terraform/envs/dev
+        run: terraform apply -auto-approve -input=false
+
+      - name: Export outputs for later stages
+        id: tf
+        working-directory: terraform/envs/dev
+        run: |
+          echo "alb_dns=$(terraform output -raw alb_dns_name)"      >> "$GITHUB_OUTPUT"
+          echo "ec2_ip=$(terraform output -raw ec2_public_ip)"      >> "$GITHUB_OUTPUT"
+          echo "ecr_url=$(terraform output -raw ecr_repository_url)" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        run: |
+          {
+            echo "## Infrastructure deployed"
+            echo "- App URL: http://${{ steps.tf.outputs.alb_dns }}"
+            echo "- EC2 public IP: ${{ steps.tf.outputs.ec2_ip }}"
+            echo "- ECR repository: ${{ steps.tf.outputs.ecr_url }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  ##################################################################
+  # Stage 5 — build & push the image to AWS ECR
+  ##################################################################
+  push-ecr:
+    name: Build & Push to ECR
+    runs-on: ubuntu-24.04
+    needs: [preflight, docker-build, terraform-infra]
+    if: needs.preflight.outputs.aws_configured == 'true'
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag and push the image
+        env:
+          ECR_REPOSITORY_URL: ${{ needs.terraform-infra.outputs.ecr_url }}
+        run: |
+          echo "Pushing ${ECR_REPOSITORY_URL}:${IMAGE_TAG} (+ latest)"
+          docker build \
+            -t "${ECR_REPOSITORY_URL}:${IMAGE_TAG}" \
+            -t "${ECR_REPOSITORY_URL}:latest" \
+            app
+          docker push "${ECR_REPOSITORY_URL}:${IMAGE_TAG}"
+          docker push "${ECR_REPOSITORY_URL}:latest"
+
+  ##################################################################
+  # Stage 6 — app deploy on EC2 + health check + auto-rollback
+  ##################################################################
+  deploy-app:
+    name: App Deploy (EC2 via SSH)
+    runs-on: ubuntu-24.04
+    needs: [preflight, terraform-infra, push-ecr]
+    if: >-
+      needs.preflight.outputs.aws_configured == 'true' &&
+      needs.preflight.outputs.ssh_configured == 'true'
+    env:
+      ALB_DNS: ${{ needs.terraform-infra.outputs.alb_dns }}
+      EC2_HOST: ${{ needs.terraform-infra.outputs.ec2_ip }}
+      IMAGE_TAG: ${{ github.event.inputs.image_tag || github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Copy deploy script to the EC2 host
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          source: "scripts/deploy.sh"
+          target: "acdp"
+          rm: true
+
+      - name: Run the deployment (pull image, swap container)
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: bash ~/acdp/scripts/deploy.sh "${IMAGE_TAG}"
+
+      - name: Verify /health through the ALB
+        run: |
+          url="http://${ALB_DNS}/health"
+          echo "Waiting for a healthy response from ${url} ..."
+          for i in $(seq 1 30); do
+            if body=$(curl -fsS --max-time 5 "$url"); then
+              echo "$body"
+              echo "App is healthy (attempt ${i})."
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::Health check failed at ${url} — rolling back"
+          exit 1
+
+      - name: Automatic rollback to the previous image
+        if: failure()
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: bash ~/acdp/scripts/deploy.sh previous || true
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          {
+            echo "## Application deployed"
+            echo "- App URL: http://${ALB_DNS}"
+            echo "- Image tag: ${IMAGE_TAG}"
+            echo "- EC2 host: ${EC2_HOST}"
+          } >> "$GITHUB_STEP_SUMMARY"
