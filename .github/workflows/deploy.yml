@@ -47,7 +47,7 @@ jobs:
   ##################################################################
   preflight:
     name: Preflight (detect configuration)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       aws_configured: ${{ steps.check.outputs.aws_configured }}
       ssh_configured: ${{ steps.check.outputs.ssh_configured }}
@@ -99,7 +99,7 @@ jobs:
   ##################################################################
   lint-test:
     name: Lint & Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: preflight
     defaults:
       run:
@@ -143,7 +143,7 @@ jobs:
   ##################################################################
   terraform-validate:
     name: Terraform fmt & validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: preflight
     steps:
       - uses: actions/checkout@v7
@@ -171,7 +171,7 @@ jobs:
   ##################################################################
   docker-build:
     name: Docker build & compose integration test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: lint-test
     env:
       APP_VERSION: ${{ github.sha }}
@@ -203,7 +203,7 @@ jobs:
   ##################################################################
   terraform-infra:
     name: Infrastructure Deploy (terraform apply)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [preflight, lint-test, terraform-validate]
     if: needs.preflight.outputs.aws_configured == 'true'
     outputs:
@@ -268,7 +268,7 @@ jobs:
   ##################################################################
   push-ecr:
     name: Build & Push to ECR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [preflight, docker-build, terraform-infra]
     if: needs.preflight.outputs.aws_configured == 'true'
     env:
@@ -304,7 +304,7 @@ jobs:
   ##################################################################
   deploy-app:
     name: App Deploy (EC2 via SSH)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [preflight, terraform-infra, push-ecr]
     if: >-
       needs.preflight.outputs.aws_configured == 'true' &&

@@ -19,7 +19,7 @@ permissions:
 jobs:
   bootstrap:
     name: Create S3 state bucket + DynamoDB lock table
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
     steps:
