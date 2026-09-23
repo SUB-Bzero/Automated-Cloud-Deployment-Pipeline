@@ -23,7 +23,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   bucket_name = var.bucket_name != "" ? var.bucket_name : "${data.aws_caller_identity.current.account_id}-${var.project}-tfstate"
-  tags        = {
+  tags = {
     Project   = var.project
     ManagedBy = "terraform"
     Purpose   = "terraform-remote-state"

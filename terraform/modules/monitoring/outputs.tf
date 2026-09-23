@@ -5,7 +5,7 @@ output "sns_topic_arn" {
 
 output "alarm_names" {
   description = "Names of all created CloudWatch alarms."
-  value       = [
+  value = [
     aws_cloudwatch_metric_alarm.ec2_cpu.alarm_name,
     aws_cloudwatch_metric_alarm.alb_5xx.alarm_name,
     aws_cloudwatch_metric_alarm.alb_unhealthy_hosts.alarm_name,

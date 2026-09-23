@@ -36,7 +36,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
       {
         rulePriority = 1
         description  = "Expire untagged images older than 7 days"
-        selection    = {
+        selection = {
           tagStatus   = "untagged"
           countType   = "sinceImagePushed"
           countUnit   = "days"
@@ -47,7 +47,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
       {
         rulePriority = 2
         description  = "Keep only the 20 most recent tagged images"
-        selection    = {
+        selection = {
           tagStatus     = "tagged"
           tagPrefixList = ["v", "latest"]
           countType     = "imageCountMoreThan"

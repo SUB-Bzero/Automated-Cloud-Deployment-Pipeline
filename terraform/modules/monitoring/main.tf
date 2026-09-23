@@ -145,52 +145,52 @@ resource "aws_cloudwatch_dashboard" "this" {
   dashboard_body = jsonencode({
     widgets = [
       {
-        type       = "metric", x = 0, y = 0, width = 12, height = 6
+        type = "metric", x = 0, y = 0, width = 12, height = 6
         properties = {
-          title   = "EC2 — CPU Utilization (%)"
-          region  = var.aws_region
-          period  = 300
-          stat    = "Average"
-          view    = "timeSeries"
+          title  = "EC2 — CPU Utilization (%)"
+          region = var.aws_region
+          period = 300
+          stat   = "Average"
+          view   = "timeSeries"
           metrics = [
             ["AWS/EC2", "CPUUtilization", "InstanceId", var.instance_id]
           ]
         }
       },
       {
-        type       = "metric", x = 12, y = 0, width = 12, height = 6
+        type = "metric", x = 12, y = 0, width = 12, height = 6
         properties = {
-          title   = "ALB — HTTP 5xx responses (sum / 5 min)"
-          region  = var.aws_region
-          period  = 300
-          stat    = "Sum"
-          view    = "timeSeries"
+          title  = "ALB — HTTP 5xx responses (sum / 5 min)"
+          region = var.aws_region
+          period = 300
+          stat   = "Sum"
+          view   = "timeSeries"
           metrics = [
             ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", local.alb_suffix, "TargetGroup", local.target_group_suffix]
           ]
         }
       },
       {
-        type       = "metric", x = 0, y = 6, width = 12, height = 6
+        type = "metric", x = 0, y = 6, width = 12, height = 6
         properties = {
-          title   = "ALB — Unhealthy host count"
-          region  = var.aws_region
-          period  = 60
-          stat    = "Maximum"
-          view    = "timeSeries"
+          title  = "ALB — Unhealthy host count"
+          region = var.aws_region
+          period = 60
+          stat   = "Maximum"
+          view   = "timeSeries"
           metrics = [
             ["AWS/ApplicationELB", "UnHealthyHostCount", "LoadBalancer", local.alb_suffix, "TargetGroup", local.target_group_suffix]
           ]
         }
       },
       {
-        type       = "metric", x = 12, y = 6, width = 12, height = 6
+        type = "metric", x = 12, y = 6, width = 12, height = 6
         properties = {
-          title   = "RDS — CPU Utilization (%)"
-          region  = var.aws_region
-          period  = 300
-          stat    = "Average"
-          view    = "timeSeries"
+          title  = "RDS — CPU Utilization (%)"
+          region = var.aws_region
+          period = 300
+          stat   = "Average"
+          view   = "timeSeries"
           metrics = [
             ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", var.db_instance_identifier]
           ]

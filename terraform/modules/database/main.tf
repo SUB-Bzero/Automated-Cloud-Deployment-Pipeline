@@ -67,7 +67,7 @@ resource "aws_ssm_parameter" "database_url" {
   name        = "/${var.project}/${var.environment}/database_url"
   description = "RDS PostgreSQL connection URL for the app"
   type        = "SecureString"
-  value       = format(
+  value = format(
     "postgresql://%s:%s@%s:%d/%s",
     var.db_username,
     random_password.db.result,
