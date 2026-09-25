@@ -1,3 +1,4 @@
+$ npm run lint
 
 > acdp-webapp@1.0.0 lint
 > eslint .
