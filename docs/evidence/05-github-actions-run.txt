@@ -1,57 +1,56 @@
-$ gh run view 36202768375 --repo SUB-Bzero/Automated-Cloud-Deployment-Pipeline
+$ gh run view 36204047142 --repo SUB-Bzero/Automated-Cloud-Deployment-Pipeline
 
-
-✓ arena/01a0daf5-automated-cloud-deployment-pip CI/CD Deploy · 36202768375
+✓ arena/01a0db01-automated-cloud-deployment-pip CI/CD Deploy · 36204047142
 Triggered via push about 1 minute ago
 
 JOBS
-✓ Preflight (detect configuration) in 4s (ID 108292738601)
-✓ Terraform fmt & validate in 57s (ID 108292759289)
-✓ Lint & Tests in 18s (ID 108292759319)
-✓ Docker build & compose integration test in 42s (ID 108292829303)
-- Infrastructure Deploy (terraform apply) in 0s (ID 108292952298)
-- Build & Push to ECR in 0s (ID 108292970942)
-- App Deploy (EC2 via SSH) in 0s (ID 108292971902)
+✓ Preflight (detect configuration) in 3s (ID 108296638132)
+✓ Lint & Tests in 18s (ID 108296653852)
+✓ Terraform fmt & validate in 46s (ID 108296653874)
+✓ Docker build & compose integration test in 31s (ID 108296719841)
+- Infrastructure Deploy (terraform apply) in 0s (ID 108296810623)
+- Build & Push to ECR in 0s (ID 108296832665)
+- App Deploy (EC2 via SSH) in 0s (ID 108296833510)
 
 For more information about a job, try: gh run view --job=<job-id>
-View this run on GitHub: https://github.com/SUB-Bzero/Automated-Cloud-Deployment-Pipeline/actions/runs/36202768375
+View this run on GitHub: https://github.com/SUB-Bzero/Automated-Cloud-Deployment-Pipeline/actions/runs/36204047142
 
-$ gh api .../actions/runs/36202768375/jobs   (step detail)
+$ gh api .../actions/runs/36204047142/jobs   (step detail)
 JOB  Preflight (detect configuration)  [success]
-  [OK]      Set up job
-  [OK]      Check for configured secrets
-  [OK]      Write pipeline summary
-  [OK]      Complete job
-JOB  Terraform fmt & validate  [success]
-  [OK]      Set up job
-  [OK]      Run actions/checkout@v7
-  [OK]      Run hashicorp/setup-terraform@v4
-  [OK]      Check formatting (terraform fmt -check)
-  [OK]      Init (offline backend) and validate every module
-  [OK]      Post Run actions/checkout@v7
-  [OK]      Complete job
+  [OK]        Set up job
+  [OK]        Check for configured secrets
+  [OK]        Write pipeline summary
+  [OK]        Complete job
 JOB  Lint & Tests  [success]
-  [OK]      Set up job
-  [OK]      Initialize containers
-  [OK]      Run actions/checkout@v7
-  [OK]      Run actions/setup-node@v7
-  [OK]      Install dependencies
-  [OK]      Lint (ESLint)
-  [OK]      Unit & integration tests (node:test + real PostgreSQL)
-  [OK]      Post Run actions/setup-node@v7
-  [OK]      Post Run actions/checkout@v7
-  [OK]      Stop containers
-  [OK]      Complete job
+  [OK]        Set up job
+  [OK]        Initialize containers
+  [OK]        Run actions/checkout@v7
+  [OK]        Run actions/setup-node@v7
+  [OK]        Install dependencies
+  [OK]        Lint (ESLint)
+  [OK]        Unit & integration tests (node:test + real PostgreSQL)
+  [OK]        Post Run actions/setup-node@v7
+  [OK]        Post Run actions/checkout@v7
+  [OK]        Stop containers
+  [OK]        Complete job
+JOB  Terraform fmt & validate  [success]
+  [OK]        Set up job
+  [OK]        Run actions/checkout@v7
+  [OK]        Run hashicorp/setup-terraform@v4
+  [OK]        Check formatting (terraform fmt -check)
+  [OK]        Init (offline backend) and validate every module
+  [OK]        Post Run actions/checkout@v7
+  [OK]        Complete job
 JOB  Docker build & compose integration test  [success]
-  [OK]      Set up job
-  [OK]      Run actions/checkout@v7
-  [OK]      Build the multi-stage image
-  [OK]      Start Web App + PostgreSQL locally (docker compose)
-  [OK]      Smoke test /health
-  [OK]      Show container status
-  [SKIPPED]      Dump app logs (on failure)
-  [OK]      Post Run actions/checkout@v7
-  [OK]      Complete job
+  [OK]        Set up job
+  [OK]        Run actions/checkout@v7
+  [OK]        Build the multi-stage image
+  [OK]        Start Web App + PostgreSQL locally (docker compose)
+  [OK]        Smoke test /health
+  [OK]        Show container status
+  [SKIPPED]   Dump app logs (on failure)
+  [OK]        Post Run actions/checkout@v7
+  [OK]        Complete job
 JOB  Infrastructure Deploy (terraform apply)  [skipped]
 JOB  Build & Push to ECR  [skipped]
 JOB  App Deploy (EC2 via SSH)  [skipped]

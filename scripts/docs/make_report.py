@@ -25,7 +25,7 @@ from reportlab.platypus import (
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DOCS = os.path.join(ROOT, "docs")
 REPO_URL = "https://github.com/SUB-Bzero/Automated-Cloud-Deployment-Pipeline"
-RUN_URL = f"{REPO_URL}/actions/runs/36202768375"
+RUN_URL = f"{REPO_URL}/actions/runs/36204047142"
 
 ACCENT = RGBColor(0x1F, 0x4E, 0x79)      # dark blue
 BOX_BG = "FFF7E0"                         # placeholder box fill (docx)
@@ -408,8 +408,8 @@ CONTENT = [
           "the CI/CD workflows, the deploy/rollback script, the architecture diagram "
           "and this report (docs/Capstone_Report.docx / .pdf). All work is merged "
           "into the main branch through pull requests (the capstone delivery was "
-          "merged via pull request #1), so the assessor always sees the latest "
-          "version on main; the pipeline runs on every push."),
+          "merged via pull requests #1, #2 and #3), so the assessor always sees "
+          "the latest version on main; the pipeline runs on every push."),
     ("p", "An assessor can verify the project without an AWS account by cloning the "
           "repository and running the same stages the pipeline runs (Appendix B lists "
           "the commands): npm ci, npm run lint, npm test (with any local PostgreSQL), "

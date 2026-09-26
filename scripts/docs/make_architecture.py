@@ -125,21 +125,21 @@ text(270, 372, "AWS Cloud (us-east-1) — provisioned by Terraform",
 box(380, 392, 210, 84, "Amazon ECR",
     ["acdp-dev-app", "images: SHA + latest"], fill="#FDE68A", stroke="#B45309")
 
-# State backend group
-rect(300, 510, 270, 150, "#ECFDF5", "#059669", rx=10, dash="6 4")
-box(320, 530, 230, 56, "S3 bucket — tfstate",
+# State backend group (kept clear of the Internet -> ALB traffic path)
+rect(300, 520, 270, 150, "#ECFDF5", "#059669", rx=10, dash="6 4")
+box(320, 540, 230, 56, "S3 bucket — tfstate",
     ["versioned + encrypted"], fill="#DCFCE7", stroke="#16A34A", tsize=13.5, size=11.5)
-box(320, 596, 230, 50, "DynamoDB — lock",
+box(320, 606, 230, 50, "DynamoDB — lock",
     ["state locking"], fill="#FED7AA", stroke="#EA580C", tsize=13.5, size=11.5)
 
 # VPC
-rect(700, 395, 750, 545, "#FFFBEB", "#D97706", rx=12, sw=2)
+rect(700, 395, 750, 490, "#FFFBEB", "#D97706", rx=12, sw=2)
 text(715, 422, "VPC 10.0.0.0/16", size=14, bold=True, anchor="start", fill="#92400E")
 
 # Public subnets
 rect(720, 435, 710, 205, "#DBEAFE", "#3B82F6", rx=10)
-text(735, 458, "Public subnets — AZ a \u0026 b  (10.0.1.0/24, 10.0.2.0/24) \u00b7 IGW + route to Internet",
-     size=12.5, anchor="start", fill="#1E40AF")
+text(1425, 451, "Public subnets — AZ a \u0026 b  (10.0.1.0/24, 10.0.2.0/24) \u00b7 IGW + route to Internet",
+     size=12.5, anchor="end", fill="#1E40AF")
 box(740, 480, 260, 110, "Application Load Balancer",
     ["Internet-facing :80", "health check: GET /health", "forward to target :8080"],
     fill="#FDE68A", stroke="#B45309", tsize=14, size=12)
@@ -163,14 +163,14 @@ text(950, 790, "Security group: PostgreSQL :5432",
      size=11.5, fill="#374151")
 
 # Internet
-box(55, 515, 165, 95, "Internet",
+box(55, 452, 165, 96, "Internet",
     ["users / browsers", "HTTP requests"], fill="#FFFFFF", stroke="#334155")
 
 # CloudWatch + SNS
 box(310, 690, 260, 130, "Amazon CloudWatch",
-    ["alarms: EC2 CPU \u203e80%", "ALB HTTP 5xx spike,", "unhealthy hosts, RDS CPU", "+ dashboard"],
+    ["alarms: EC2 CPU >=80%", "ALB HTTP 5xx spike,", "unhealthy hosts, RDS CPU", "+ dashboard"],
     fill="#EDE9FE", stroke="#7C3AED", tsize=14, size=11.5)
-box(310, 850, 260, 85, "Amazon SNS",
+box(310, 845, 260, 72, "Amazon SNS",
     ["email alert", "(subscription confirmed)"], fill="#FCE7F3", stroke="#DB2777", tsize=14, size=12)
 
 # ------------------------------------------------------------- arrows
@@ -199,13 +199,12 @@ text(1130, 400, "SSH deploy: scripts/deploy.sh", size=12.5, anchor="start",
 badge(1105, 395, "6", "#B45309")
 
 # ECR -> EC2 (docker pull)
-arrow(590, 434, 1078, 520, color="#B45309")
-text(770, 462, "docker pull (instance IAM role)", size=12.5, fill="#9A3412", bold=True)
+arrow(590, 434, 1078, 475, color="#B45309")
 
 # Internet -> ALB
-arrow(220, 562, 738, 562, color="#1D4ED8")
-text(478, 548, "HTTP :80", size=13, fill="#1E3A8A", bold=True)
-badge(463, 562, "1", "#1D4ED8")
+arrow(220, 500, 738, 500, color="#1D4ED8")
+text(545, 496, "HTTP :80", size=13, fill="#1E3A8A", bold=True)
+badge(463, 500, "1", "#1D4ED8")
 
 # ALB -> EC2
 arrow(1000, 562, 1078, 562, color="#1D4ED8")
@@ -226,13 +225,14 @@ arrow(440, 820, 440, 848, color="#DB2777")
 text(450, 840, "alarm state", size=12, anchor="start", fill="#9D174D", bold=True)
 
 # SNS -> email (out of AWS box)
-arrow(570, 893, 640, 893, color="#DB2777")
-text(648, 897, "\u2709 email notification", size=12.5, anchor="start", fill="#9D174D", bold=True)
+arrow(570, 881, 640, 881, color="#DB2777")
+text(648, 873, "email notification", size=12.5, anchor="start", fill="#9D174D", bold=True)
 
 # Legend
-rect(700, 895, 470, 46, "#FFFFFF", "#94A3B8", rx=8, sw=1)
-text(715, 915, "Legend:", size=12, anchor="start", bold=True)
-text(715, 934, "blue = application traffic \u00b7 orange = CI/CD \u00b7 green = state \u00b7 purple dashed = monitoring \u00b7 \u2460-\u2462 numbered request flow",
+rect(660, 893, 440, 56, "#FFFFFF", "#94A3B8", rx=8, sw=1)
+text(675, 916, "Legend: blue = application traffic · orange = CI/CD · green = state",
+     size=11, anchor="start", fill="#475569")
+text(675, 934, "purple dashed = monitoring \u00b7 1-3 = numbered request flow",
      size=11, anchor="start", fill="#475569")
 
 add("</svg>")
