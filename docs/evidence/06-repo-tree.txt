@@ -1,4 +1,3 @@
-$ git ls-files   # repository structure (files grouped per directory)
 Automated-Cloud-Deployment-Pipeline/
 ├── .gitignore, Makefile, README.md, docker-compose.yml
 ├── .github/
@@ -11,13 +10,13 @@ Automated-Cloud-Deployment-Pipeline/
 │   └── test/
 │       ├── health.test.js, helpers.js, items.test.js
 ├── docs/
-│   ├── architecture.pdf, architecture.png, architecture.svg, aws-iam-policy.json
+│   ├── Capstone_Report.docx, Capstone_Report.pdf, architecture.pdf, architecture.png, architecture.svg, aws-iam-policy.json, fig02-eslint.png, fig03-tests.png, fig04-local-health.png, fig05-actions.png, fig06-repo-tree.png
 │   └── evidence/
-│       ├── 02-eslint-lint.txt, 03-unit-tests.txt, 04-local-app-health.txt, 05-github-actions-run.txt
+│       ├── 02-eslint-lint.txt, 03-unit-tests.txt, 04-local-app-health.txt, 05-github-actions-run.txt, 06-repo-tree.txt
 ├── scripts/
 │   ├── deploy.sh, hcl_align.py
 │   └── docs/
-│       ├── make_architecture.py, render_terminal.py
+│       ├── make_architecture.py, make_report.py, render_terminal.py
 └── terraform/
     ├── bootstrap/
     │   ├── main.tf, outputs.tf, variables.tf, versions.tf

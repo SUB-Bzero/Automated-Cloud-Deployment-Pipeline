@@ -25,7 +25,7 @@ from reportlab.platypus import (
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DOCS = os.path.join(ROOT, "docs")
 REPO_URL = "https://github.com/SUB-Bzero/Automated-Cloud-Deployment-Pipeline"
-RUN_URL = f"{REPO_URL}/actions/runs/35932827444"
+RUN_URL = f"{REPO_URL}/actions/runs/36202768375"
 
 ACCENT = RGBColor(0x1F, 0x4E, 0x79)      # dark blue
 BOX_BG = "FFF7E0"                         # placeholder box fill (docx)
@@ -113,7 +113,8 @@ CONTENT = [
             ["CI/CD", "GitHub Actions (deploy.yml, bootstrap.yml)"],
             ["AWS services", "VPC, EC2, ALB, RDS PostgreSQL, ECR, S3, DynamoDB, SNS, "
              "CloudWatch, SSM Parameter Store, IAM"],
-            ["Local verification DB", "PostgreSQL 16 (bundled server used for the "
+            ["Local verification DB", "PostgreSQL (postgres:16-alpine in "
+             "docker-compose and CI; an embedded PostgreSQL 18 server for the "
              "development/test database in this workspace)"],
         ],
         [3.6, 9.4],
@@ -348,7 +349,7 @@ CONTENT = [
              "Figure 2: ESLint passes with zero errors or warnings (npm run lint).")),
     ("img", ("fig03-tests.png",
              "Figure 3: All 8 unit/integration tests pass against a real PostgreSQL "
-             "16 server (node:test + supertest), including the 503 path when the "
+             "server (node:test + supertest), including the 503 path when the "
              "database is unreachable.")),
     ("img", ("fig04-local-health.png",
              "Figure 4: The application running locally with a real PostgreSQL "
@@ -405,9 +406,10 @@ CONTENT = [
     ("p", f"Complete project source code: {REPO_URL}"),
     ("p", "The repository contains the application, the modular Terraform codebase, "
           "the CI/CD workflows, the deploy/rollback script, the architecture diagram "
-          "and this report (docs/Capstone_Report.docx / .pdf). Work is delivered on "
-          "the branch arena/01a0d06d-automated-cloud-deployment-pip and merged to "
-          "main via pull request; the pipeline runs on every push."),
+          "and this report (docs/Capstone_Report.docx / .pdf). All work is merged "
+          "into the main branch through pull requests (the capstone delivery was "
+          "merged via pull request #1), so the assessor always sees the latest "
+          "version on main; the pipeline runs on every push."),
     ("p", "An assessor can verify the project without an AWS account by cloning the "
           "repository and running the same stages the pipeline runs (Appendix B lists "
           "the commands): npm ci, npm run lint, npm test (with any local PostgreSQL), "
